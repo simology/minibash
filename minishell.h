@@ -20,6 +20,7 @@ typedef struct s_config
 {
     char    *line;
     char    **cmd;
+    char    *cmd_path;
     int     cmd_counter;
     char    **args;
     int     args_counter;
@@ -30,6 +31,9 @@ typedef struct s_config
     int     n_pipe;
     int		stdout_clone;
     int		stdin_clone;
+    int     status;
+    char    **test;
+    char    *cmd_argv[];
 
 } t_config;
 
@@ -41,6 +45,8 @@ int	    ft_strncmp(const char *s1, const char *s2, size_t n);
 size_t	ft_strlen(const char *s);
 char	*ft_strcat(char *dest, char *src);
 char	*ft_strjoin(char const *s1, char const *s2);
+char	**ft_pjoin(char const *s1, char const *s2);
+
 
 char    *read_line(t_config *config);
 char    *split_to_line(char **str);
@@ -56,10 +62,10 @@ int     cmd_execute(t_config *config);
 int     cmd_prexec(t_config *config);
 
 char    **builtin_str(void);
-int     builtin_func(char *cmd, char **args);
+int     builtin_func(char *cmd, char *args);
 int     len_num_builtins(char **builtin_str);
-int     cmd_cd(char **args);
-int     cmd_exit(char **args);
+int     cmd_cd(char *args);
+int     cmd_exit(char *args);
 
 
 void shell_init(t_config *config, char **envp);

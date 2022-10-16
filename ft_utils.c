@@ -18,8 +18,8 @@ void ft_argv_print(char **argv)
     i++;
   }
 }
-int builtin_func(char *cmd, char **args){
-  printf("inside : %s \n ", args[0]);
+int builtin_func(char *cmd, char *args){
+  printf("inside : %s \n ", args);
   if (ft_strcmp(cmd, "cd") == 0)
     return (cmd_cd(args));
   else if (ft_strcmp(cmd, "exit") == 0)
@@ -91,7 +91,7 @@ int	free_matrix(char **matrix)
 	free(matrix);
 	return (0);
 }
-
+/*
 char *split_to_line(char **str){
 	  int i;
     int count;
@@ -111,7 +111,7 @@ char *split_to_line(char **str){
     line[count] = '\0';
     return(line); 
 }
-
+*/
 int len_num_builtins(char **builtin_str) {
   int i;
   i = 0;
@@ -121,20 +121,20 @@ int len_num_builtins(char **builtin_str) {
   return (i);
 }
 
-int cmd_cd(char **args)
+int cmd_cd(char *args)
 {
-  if (args[1] == NULL) {
+  if (args == NULL) {
     fprintf(stderr, "lsh: expected argument to \"cd\"\n");
   } 
   else {
-    if (chdir(args[1]) != 0) {
+    if (chdir(args) != 0) {
       perror("lsh");
     }
   }
   return 1;
 }
 
-int cmd_exit(char **args)
+int cmd_exit(char *args)
 {
   (void)args;
   return 0;

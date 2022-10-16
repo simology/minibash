@@ -43,6 +43,12 @@ void cmd_fill(t_config *config){
         j = 0;
         i++;
     }
+    /*
+    if(config->args_counter > 0 ){
+      config->args[config->args_counter] = NULL;
+    }
+    */
+    printf("args count %d \n ", config->args_counter);
 }
 
 int cmd_parser(t_config *config){
@@ -69,40 +75,34 @@ int cmd_parser(t_config *config){
         printf("single > here \n");
     }
     else {
-        printf("simple cmd \n");
-        /*
+        if(config->line){
+        printf("simple cmd %s \n", config->line);
         tmp = ft_split(config->line,(char)SPACE_DELM);
-        //printf("deb : %s \n", tmp[0]);
         if(tmp[0]){
+           printf("tmp0 %s \n", tmp[0]);
         config->cmd_counter += ft_strlen(tmp[0]);
         config->cmd = malloc(sizeof(char *) * config->cmd_counter + 1);
         }
         if(tmp[1]){
+          printf("tmp1 %s \n", tmp[1]);
         config->args_counter += ft_strlen(tmp[1]);
         config->args = malloc(sizeof(char *) * config->args_counter + 1);
         }
-        //cmd_fill(config);   
-        */     
-      
+        cmd_fill(config);
+        }
     }
 return(1);
 }
 
 void shell_loop(t_config *config)
 {  
-  int status;
-  status = 1;
 
-  while(status) 
+  while(config->status) 
   {
     config->line = read_line(config);
-	  if(cmd_parser(config)){
-    status = cmd_prexec(config);
-    }
-	
-    
-    //free(config->line);
-    //free(args);
+    cmd_parser(config);
+    config->status = cmd_prexec(config);
+
   }
 }
 
@@ -115,8 +115,8 @@ int cmd_prexec(t_config *config)
   }
   while(i < config->builtin_len){
       if (ft_strcmp(config->cmd[0], config->builtin_cmd[i]) == 0) {
-        return (builtin_func(config->builtin_cmd[i], config->args));
-    }
+        return (builtin_func(config->builtin_cmd[i], config->args[0]));
+      }
 	i++;
   }
 return cmd_execute(config);
@@ -127,10 +127,27 @@ int cmd_execute(t_config *config){
 
 	pid = fork();
 	if(pid == 0) {
-      if(execve(ft_pathfinder(config->cmd[0], config->envp), &config->args[0], config->envp)){
-			printf("error exec.\n");
-	}
-		exit(EXIT_FAILURE);
+     
+        config->cmd_path = ft_pathfinder(config->cmd[0], config->envp);
+      //char *cmd_argv[] = {config->cmd_path, NULL, NULL};
+      if(config->args[0]){
+
+        config->cmd_argv[0] = malloc(ft_strlen(config->cmd_path) * sizeof(char *));
+        config->cmd_argv[1] = malloc(ft_strlen(config->cmd_path) * sizeof(char *));
+        config->cmd_argv[2] = malloc(1);
+
+        config->cmd_argv[0] = config->cmd_path;
+        config->cmd_argv[1] = config->args[0];
+        config->cmd_argv[2] = NULL;
+      }
+      printf("path : %s \n",config->cmd_argv[0]);
+      printf("path : %s \n",config->cmd_argv[1]);
+      printf("path : %s \n",config->cmd_argv[2]);
+      
+      if(execve(config->cmd_path, config->cmd_argv, config->envp)){
+			  printf("error exec.\n");
+	    }
+		  exit(EXIT_FAILURE);
 
 	}
 	else if(pid > 0) {
@@ -146,6 +163,8 @@ void shell_init(t_config *config, char **envp){
   //config->banner = ft_strcat(getenv("USER"), "@minishell>");
   config->banner = "@minishell>";
   config->n_pipe = 0;
+  config->line = 0;
+  config->status = 1;
 	
 }
 
