@@ -39,16 +39,18 @@ void cmd_fill(t_config *config){
             }
             j++;
         }
-        tmp1 = 0;
+        //tmp1 = 0;
+        free(tmp1);
         j = 0;
         i++;
     }
-    /*
-    if(config->args_counter > 0 ){
-      config->args[config->args_counter] = NULL;
-    }
-    */
+    
+    config->args[config->args_counter] = NULL;
+    
+    
     printf("args count %d \n ", config->args_counter);
+    printf("args s %s \n ", config->args[0]);
+    free(cmdf);
 }
 
 int cmd_parser(t_config *config){
@@ -63,8 +65,8 @@ int cmd_parser(t_config *config){
         cmd = ft_split(config->line,(char)PIPE_DELM);
         while(cmd[i]){
             tmp = ft_split(cmd[i],(char)SPACE_DELM);
-            config->cmd_counter += ft_strlen(tmp[0]);
-            config->args_counter += ft_strlen(tmp[1]);
+            config->cmd_counter = ft_strlen(tmp[0]);
+            config->args_counter = ft_strlen(tmp[1]);
             i++;
         }
         config->cmd = malloc(sizeof(char *) * config->cmd_counter + 1);
@@ -79,19 +81,26 @@ int cmd_parser(t_config *config){
         printf("simple cmd %s \n", config->line);
         tmp = ft_split(config->line,(char)SPACE_DELM);
         if(tmp[0]){
-           printf("tmp0 %s \n", tmp[0]);
-        config->cmd_counter += ft_strlen(tmp[0]);
+        printf("tmp0 %s \n", tmp[0]);
+        config->cmd_counter = ft_strlen(tmp[0]);
         config->cmd = malloc(sizeof(char *) * config->cmd_counter + 1);
         }
         if(tmp[1]){
-          printf("tmp1 %s \n", tmp[1]);
-        config->args_counter += ft_strlen(tmp[1]);
+        printf("tmp1 %s \n", tmp[1]);
+        config->args_counter = ft_strlen(tmp[1]);
         config->args = malloc(sizeof(char *) * config->args_counter + 1);
         }
+        free(tmp);
         cmd_fill(config);
         }
     }
 return(1);
+}
+
+void cmd_clean(t_config *config){
+  free(config->cmd);
+  //free(config->args);
+  //free(config->cmd_argv);
 }
 
 void shell_loop(t_config *config)
@@ -102,6 +111,7 @@ void shell_loop(t_config *config)
     config->line = read_line(config);
     cmd_parser(config);
     config->status = cmd_prexec(config);
+    cmd_clean(config);
 
   }
 }
@@ -128,25 +138,44 @@ int cmd_execute(t_config *config){
 	pid = fork();
 	if(pid == 0) {
      
-        config->cmd_path = ft_pathfinder(config->cmd[0], config->envp);
+      config->cmd_path = ft_pathfinder(config->cmd[0], config->envp);
+      printf("path : %s \n", config->cmd_path);
       //char *cmd_argv[] = {config->cmd_path, NULL, NULL};
       if(config->args[0]){
-
+        printf("args found \n");
         config->cmd_argv[0] = malloc(ft_strlen(config->cmd_path) * sizeof(char *));
-        config->cmd_argv[1] = malloc(ft_strlen(config->cmd_path) * sizeof(char *));
+        config->cmd_argv[1] = malloc(ft_strlen(config->args[0]) * sizeof(char *));
         config->cmd_argv[2] = malloc(1);
 
         config->cmd_argv[0] = config->cmd_path;
         config->cmd_argv[1] = config->args[0];
         config->cmd_argv[2] = NULL;
       }
-      printf("path : %s \n",config->cmd_argv[0]);
-      printf("path : %s \n",config->cmd_argv[1]);
-      printf("path : %s \n",config->cmd_argv[2]);
+      
+      else {
+        //printf("args not found \n");
+        //printf("args val : %s \n", config->args[0]);
+        //ft_argv_print(config->args);
+        //config->cmd_argv[0] = malloc(ft_strlen(config->cmd_path) * sizeof(char *));
+        //config->cmd_argv[1] = malloc(ft_strlen(config->args[0]) * sizeof(char *));
+        //config->cmd_argv[2] = malloc(1);
+
+        //config->cmd_argv[0] = config->cmd_path;
+        //config->cmd_argv[1] = config->args[0];
+        //config->cmd_argv[2] = NULL;        
+        //config->cmd_argv[0] = malloc(ft_strlen(config->cmd_path) * sizeof(char *));
+        //config->cmd_argv[0] = config->cmd_path;
+
+      }
+      
+
+
+
       
       if(execve(config->cmd_path, config->cmd_argv, config->envp)){
 			  printf("error exec.\n");
 	    }
+      
 		  exit(EXIT_FAILURE);
 
 	}
